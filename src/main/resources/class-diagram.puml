@@ -1,0 +1,29 @@
+@startuml
+'https://plantuml.com/class-diagram
+set separator ::
+
+hide fields
+skinparam class {
+BackgroundColor PaleGreen
+}
+
+namespace csc232 #DDDDDD {
+}
+
+interface csc232::cell<Object> {
++ ~cell()
++ {abstract} read() const : Object
++ {abstract} write( value : const Object& ) : void
+}
+
+csc232::cell <|-- csc232::memory_cell
+
+class csc232::memory_cell<Object> {
+- m_data : Object
++ read() const : Object
++ write( value : const Object& ) : void
+}
+
+show memory_cell fields
+
+@enduml

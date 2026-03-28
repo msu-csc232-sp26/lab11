@@ -1,0 +1,39 @@
+BasedOnStyle: LLVM
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+BreakBeforeBraces: Allman
+AllowShortIfStatementsOnASingleLine: false
+BraceWrapping:
+  AfterFunction: true
+  AfterClass: true
+  AfterStruct: true
+  AfterEnum: true
+  AfterControlStatement: true
+  AfterNamespace: true
+  AfterExternBlock: true
+  BeforeLambdaBody: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+  SplitEmptyFunction: true
+IndentCaseLabels: false
+ColumnLimit: 0
+AccessModifierOffset: -4
+NamespaceIndentation: All
+FixNamespaceComments: false
+SpacesInSquareBrackets: true
+SpacesInAngles: true
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: true
+SpaceInEmptyBlock: true
+SpacesInParens: Custom
+SpacesInParensOptions:
+  InCStyleCasts: true
+  InConditionalStatements: true
+  InEmptyParentheses: true
+  Other: true
+Cpp11BracedListStyle: true
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 1
+MaxEmptyLinesToKeep: 1
