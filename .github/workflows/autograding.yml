@@ -50,7 +50,7 @@ jobs:
       matrix: ${{ steps.compute.outputs.matrix }}
       assignment_type: ${{ steps.compute.outputs.assignment_type }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Compute matrix and assignment type
         id: compute
