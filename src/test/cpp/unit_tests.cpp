@@ -11,7 +11,9 @@
 
 // unit_tests.cpp
 #include "base_test_fixture.h"
+#include "bubble_sort_strategy.h"
 #include "csc232.h"
+#include "insertion_sort_strategy.h"
 #include "selection_sort_strategy.h"
 #include "sort_strategy.h"
 
