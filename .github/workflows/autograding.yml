@@ -1,6 +1,9 @@
 name: Classroom Autograder
 
 on:
+  push:
+    branches:
+      - develop
   workflow_dispatch:
   repository_dispatch:
 
