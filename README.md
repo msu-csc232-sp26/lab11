@@ -1,7 +1,7 @@
 # LAB11 - Exploring Basic Sorting Algorithms
 
 [//]: # (Make sure you update the following URL with the correct repo name)
-[![Autograding](https://github.com/msu-csc232-sp26/lab11-solution/actions/workflows/autograding.yml/badge.svg?branch=develop)](https://github.com/msu-csc232-sp26/lab11-solution/actions/workflows/autograding.yml)
+[![Autograding](https://github.com/msu-csc232-sp26/lab11/actions/workflows/autograding.yml/badge.svg?branch=develop)](https://github.com/msu-csc232-sp26/lab11/actions/workflows/autograding.yml)
 
 *Applying the Strategy design pattern to implement recursive sorting algorithms in modern C++.*
 
