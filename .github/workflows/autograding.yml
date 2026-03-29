@@ -124,7 +124,7 @@ jobs:
       # Upload grading result
       # ------------------------------------------------------------
       - name: Upload grading result
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: grading-result
           path: grading/result.json
