@@ -1,0 +1,62 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "displayName": "Base Configuration (No Tasks Enabled)",
+      "description": "Build configuration with all TEST_TASK macros disabled",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "TEST_TASK1": "OFF",
+        "TEST_TASK2": "OFF",
+        "TEST_TASK3": "OFF"
+      }
+    },
+    {
+      "name": "task1",
+      "inherits": "base",
+      "displayName": "Task 1 Enabled",
+      "cacheVariables": {
+        "TEST_TASK1": "ON"
+      }
+    },
+    {
+      "name": "task1-2",
+      "inherits": "task1",
+      "displayName": "Tasks 1–2 Enabled",
+      "cacheVariables": {
+        "TEST_TASK2": "ON"
+      }
+    },
+    {
+      "name": "all-tasks",
+      "inherits": "task1-2",
+      "displayName": "All Tasks Enabled (Instructor / Grading)",
+      "cacheVariables": {
+        "TEST_TASK3": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build",
+      "configurePreset": "base"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test",
+      "configurePreset": "base",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

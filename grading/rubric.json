@@ -1,0 +1,28 @@
+{
+  "assignment": "Basic Sorting Algorithms Lab",
+  "total_points": 100,
+  "tasks": {
+    "task1": {
+      "name": "Selection Sort",
+      "points": 30
+    },
+    "task1-2": {
+      "name": "Bubble Sort",
+      "points": 30
+    },
+    "all-tasks": {
+      "name": "Insertion Sort",
+      "points": 30
+    }
+  },
+  "lint": {
+    "points": 10,
+    "penalty_per_issue": 1,
+    "max_penalty": 10
+  },
+  "late_policy": {
+    "grace_hours": 24,
+    "penalty_per_day_percent": 20,
+    "max_penalty_percent": 40
+  }
+}

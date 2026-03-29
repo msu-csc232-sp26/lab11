@@ -33,4 +33,18 @@
  * @copyright Copyright (c) 2026 James R. Daehn. All rights reserved.
  */
 
-// #include "csc232.h" // usually used to conditional declare based on current task
+#include "selection_sort_strategy.cpp"
+template class csc232::selection_sort_strategy< int >;
+template class csc232::selection_sort_strategy< double >;
+
+#include "bubble_sort_strategy.cpp"
+template class csc232::bubble_sort_strategy< int >;
+template class csc232::bubble_sort_strategy< double >;
+
+#include "insertion_sort_strategy.cpp"
+template class csc232::insertion_sort_strategy< int >;
+template class csc232::insertion_sort_strategy< double >;
+
+#include "sort_strategy_factory.cpp"
+template class csc232::sort_strategy_factory< int >;
+template class csc232::sort_strategy_factory< double >;

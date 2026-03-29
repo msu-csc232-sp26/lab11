@@ -1,29 +1,71 @@
 @startuml
-'https://plantuml.com/class-diagram
-set separator ::
+skinparam classAttributeIconSize 0
+skinparam style strictuml
 
-hide fields
-skinparam class {
-BackgroundColor PaleGreen
+title Recursive Sorting Strategies (Strategy Pattern with Client)
+
+' =========================================================
+' Strategy Interface
+' =========================================================
+interface "sort_strategy<T>" {
+    + sort(array: T*, size: std::size_t): void
 }
 
-namespace csc232 #DDDDDD {
+' =========================================================
+' Concrete Strategies
+' =========================================================
+class "selection_sort_strategy<T>" {
+    + sort(array: T*, size: std::size_t): void
+    - selection_sort(array: T*, size: std::size_t, start_index: std::size_t): void
 }
 
-interface csc232::cell<Object> {
-+ ~cell()
-+ {abstract} read() const : Object
-+ {abstract} write( value : const Object& ) : void
+class "bubble_sort_strategy<T>" {
+    + sort(array: T*, size: std::size_t): void
+    - bubble_sort(array: T*, size: std::size_t): void
 }
 
-csc232::cell <|-- csc232::memory_cell
-
-class csc232::memory_cell<Object> {
-- m_data : Object
-+ read() const : Object
-+ write( value : const Object& ) : void
+class "insertion_sort_strategy<T>" {
+    + sort(array: T*, size: std::size_t): void
+    - insertion_sort(array: T*, size: std::size_t): void
 }
 
-show memory_cell fields
+' =========================================================
+' Enum for Strategy Selection
+' =========================================================
+enum sort_type {
+    selection
+    bubble
+    insertion
+}
+
+' =========================================================
+' Strategy Factory
+' =========================================================
+class "sort_strategy_factory<T>" {
+    + create(type: sort_type): std::unique_ptr<sort_strategy<T>>
+}
+
+' =========================================================
+' Client / Context
+' =========================================================
+class "sort_client<T>" {
+    - strategy: std::unique_ptr<sort_strategy<T>>
+    + set_strategy(type: sort_type): void
+    + execute_sort(array: T*, size: std::size_t): void
+}
+
+' =========================================================
+' Relationships
+' =========================================================
+"selection_sort_strategy<T>" ..|> "sort_strategy<T>"
+"bubble_sort_strategy<T>" ..|> "sort_strategy<T>"
+"insertion_sort_strategy<T>" ..|> "sort_strategy<T>"
+
+"sort_strategy_factory<T>" --> "sort_strategy<T>" : creates
+"sort_strategy_factory<T>" ..> sort_type : uses
+
+"sort_client<T>" o-- "sort_strategy<T>" : owns
+"sort_client<T>" ..> "sort_strategy_factory<T>" : requests
+"sort_client<T>" ..> sort_type : selects
 
 @enduml

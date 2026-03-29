@@ -49,7 +49,7 @@ namespace csc232
         /**
          * Default virtual destructor.
          */
-        virtual ~CSC232BaseTestFixture( ) = default;
+        ~CSC232BaseTestFixture( ) override = default;
 
     protected:
         void SetUp( ) override
