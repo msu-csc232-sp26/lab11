@@ -1,251 +1,85 @@
-name: Automated grading with Linter and Unit Tests
+name: Classroom Autograder
 
 on:
-  pull_request:
-    paths:
-      - '**.cpp'
-      - '**.h'
-      - 'CMakeLists.txt'
-      - '.clang-*'
-      - 'Doxyfile'
-      - '.github/workflows/**'
-  push:
-    branches:
-      - main
-    paths:
-      - '**.cpp'
-      - '**.h'
-      - 'CMakeLists.txt'
-      - '.clang-*'
-      - 'Doxyfile'
-      - '.github/workflows/**'
   workflow_dispatch:
-    inputs:
-      assignment_type:
-        description: 'Override assignment type (leave blank to use file flag)'
-        required: false
-        default: ''
-        type: choice
-        options: [ '', 'lab', 'hw' ]
+  repository_dispatch:
 
 permissions:
-  actions: read
   contents: read
-  checks: write
-  pull-requests: write
+  actions: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  BUILD_TYPE: Debug
+  group: classroom-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
-  # --------------------------- Decide Lab vs Homework ---------------------------
-  compute-matrix:
-    name: Compute Matrix (lab/hw via file flag)
+  autograde:
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.compute.outputs.matrix }}
-      assignment_type: ${{ steps.compute.outputs.assignment_type }}
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Compute matrix and assignment type
-        id: compute
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-
-            // 1) Read workflow_dispatch input (if any)
-            const inputs = (context && context.payload && context.payload.inputs) || {};
-            let kind = (inputs.assignment_type || '').toLowerCase();
-
-            // 2) If no input, read .classroom/ASSIGNMENT_TYPE in the repo
-            if (!kind) {
-              const flagPath = path.join(process.env.GITHUB_WORKSPACE, '.classroom', 'ASSIGNMENT_TYPE');
-              if (fs.existsSync(flagPath)) {
-                const raw = fs.readFileSync(flagPath, 'utf8');
-                kind = raw.replace(/\r/g, '').trim().toLowerCase();
-              }
-            }
-
-            // 3) Default to lab; normalize to only 'lab' or 'hw'
-            if (kind !== 'hw') kind = 'lab';
-
-            // Build the include matrix for lab (3 tasks) vs hw (5 tasks)
-            const includeLab = [
-              { task_name: 'Task 1', cmake_flags: '-DIS_HW=OFF -DTEST_TASK1=ON  -DTEST_TASK2=OFF -DTEST_TASK3=OFF -DENABLE_ASAN=ON' },
-              { task_name: 'Task 2', cmake_flags: '-DIS_HW=OFF -DTEST_TASK1=OFF -DTEST_TASK2=ON  -DTEST_TASK3=OFF -DENABLE_ASAN=ON' },
-              { task_name: 'Task 3', cmake_flags: '-DIS_HW=OFF -DTEST_TASK1=OFF -DTEST_TASK2=OFF -DTEST_TASK3=ON  -DENABLE_ASAN=ON' },
-            ];
-
-            const includeHW = [
-              { task_name: 'Task 1', cmake_flags: '-DIS_HW=ON  -DTEST_TASK1=ON  -DTEST_TASK2=OFF -DTEST_TASK3=OFF -DENABLE_ASAN=ON' },
-              { task_name: 'Task 2', cmake_flags: '-DIS_HW=ON  -DTEST_TASK1=OFF -DTEST_TASK2=ON  -DTEST_TASK3=OFF -DENABLE_ASAN=ON' },
-              { task_name: 'Task 3', cmake_flags: '-DIS_HW=ON  -DTEST_TASK1=OFF -DTEST_TASK2=OFF -DTEST_TASK3=ON  -DENABLE_ASAN=ON' },
-              { task_name: 'Task 4', cmake_flags: '-DIS_HW=ON  -DTEST_TASK1=OFF -DTEST_TASK2=OFF -DTEST_TASK3=OFF -DENABLE_ASAN=ON -DTEST_TASK4=ON' },
-              { task_name: 'Task 5', cmake_flags: '-DIS_HW=ON  -DTEST_TASK1=OFF -DTEST_TASK2=OFF -DTEST_TASK3=OFF -DENABLE_ASAN=ON -DTEST_TASK5=ON' },
-            ];
-
-            const matrix = { include: kind === 'hw' ? includeHW : includeLab };
-
-            core.setOutput('assignment_type', kind);
-            core.setOutput('matrix', JSON.stringify(matrix));
-
-            // Nice summary for logs
-            const summ = process.env.GITHUB_STEP_SUMMARY;
-            if (summ) {
-              fs.appendFileSync(summ, `### Assignment Type: \`${kind}\`\n\n`);
-              fs.appendFileSync(summ, '### Matrix\n\n```json\n');
-              fs.appendFileSync(summ, JSON.stringify(matrix, null, 2));
-              fs.appendFileSync(summ, '\n```\n');
-            }
-
-  # --------------------------- LINTER (runs once) ---------------------------
-  cpp-linter:
-    name: clang-tidy (cpp-linter action)
-    runs-on: ubuntu-latest
-    needs: compute-matrix
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Tool versions
-        run: |
-          echo "### Tool versions" >> "$GITHUB_STEP_SUMMARY"
-          {
-            echo '$ cmake --version'; cmake --version
-            echo; echo '$ ninja --version'; ninja --version || true
-            echo; echo '$ clang-tidy --version'; clang-tidy --version || true
-          } | tee -a "$GITHUB_STEP_SUMMARY"
-
-      # Produce compile_commands.json for the linter
-      - name: Configure (CMake)
-        run: |
-          cmake -S . -B build -G Ninja \
-                -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-                -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-      - name: Run cpp-linter
-        id: linter
-        uses: cpp-linter/cpp-linter-action@v2
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          version: '18'
-          style: 'file'             # use .clang-format
-          tidy-checks: ''           # use .clang-tidy
-          file-annotations: true
-          step-summary: true
-          database: build           # use compile_commands.json
-          files-changed-only: ${{ github.event_name == 'pull_request' }}
-          thread-comments: ${{ github.event_name == 'pull_request' && 'update' || 'false' }}
-          ignore: '.github|build|src/test/cpp|include/testing'
-
-      # Optional fail-fast for linter; tests still run regardless (see next job)
-      - name: Fail fast?!
-        if: ${{ steps.linter.outputs.checks-failed != '0' }}
-        run: |
-          echo "Some linter checks failed: ${{ steps.linter.outputs.checks-failed }}"
-          exit 1
-
-  # ---------------------- BUILD & TEST (matrix) --------------------
-  build-and-test:
-    name: Build & Test (${{ matrix.task_name }})
-    runs-on: ubuntu-latest
-    needs: [ compute-matrix, cpp-linter ]             # keep pipeline order...
-    if: always() && github.actor != 'github-classroom[bot]'   # ...but ALWAYS run even if linter failed
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.compute-matrix.outputs.matrix) }}
+    env:
+      # Instructor-controlled deadline (UTC, ISO-8601)
+      DUE_AT: "2026-04-01T23:59:00"
+      # Timestamp of the submission triggering the run
+      SUBMITTED_AT: ${{ github.event.head_commit.timestamp }}
 
     steps:
-      - uses: actions/checkout@v4
+      # ------------------------------------------------------------
+      # Checkout
+      # ------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Install Ninja and ccache
-        run: sudo apt-get update && sudo apt-get install -y ninja-build ccache
+      # ------------------------------------------------------------
+      # Protect against burst grading
+      # ------------------------------------------------------------
+      - name: Throttle
+        run: sleep 15
 
-      - name: Configure ccache
+      # ------------------------------------------------------------
+      # Install build dependencies
+      # ------------------------------------------------------------
+      - name: Install build dependencies
         run: |
-          mkdir -p ~/.ccache
-          {
-            echo "max_size = 500M"
-            echo "compression = true"
-          } >> ~/.ccache/ccache.conf
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            clang \
+            libgtest-dev
 
-      - name: Cache ccache
-        uses: actions/cache@v4
-        with:
-          path: ~/.ccache
-          key: ccache-${{ runner.os }}-${{ matrix.task_name }}-${{ hashFiles('**/CMakeLists.txt', '**/*.cpp', '**/*.h') }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ matrix.task_name }}-
-            ccache-${{ runner.os }}-
+      # ------------------------------------------------------------
+      # Configure (ALL TASKS ENABLED)
+      # ------------------------------------------------------------
+      - name: Configure
+        run: cmake --preset all-tasks
 
-      - name: Configure (CMake)
-        run: |
-          cmake -S . -B build -G Ninja \
-                -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-                ${{ matrix.cmake_flags }}
-
+      # ------------------------------------------------------------
+      # Build
+      # ------------------------------------------------------------
       - name: Build
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} -- -k 0
+        run: cmake --build build/all-tasks
 
-      # Prefer CTest JUnit if available; else use GoogleTest XML fallback
-      - name: Test (with JUnit output if available)
-        id: test_run
-        working-directory: build
-        shell: bash
+      # ------------------------------------------------------------
+      # Run tests (single authoritative run)
+      # ------------------------------------------------------------
+      - name: Run tests
         run: |
-          set -e
-          RESULTS_DIR="$GITHUB_WORKSPACE/build/test-results/${{ matrix.task_name }}"
-          mkdir -p "$RESULTS_DIR"
+          mkdir -p results
+          ctest --test-dir build/all-tasks \
+                --output-on-failure \
+                --test-output-json "${GITHUB_WORKSPACE}results/all-tasks.xml"
 
-          echo "## Running tests for ${{ matrix.task_name }}" >> "$GITHUB_STEP_SUMMARY"
+      # ------------------------------------------------------------
+      # Grade (JSON-driven)
+      # ------------------------------------------------------------
+      - name: Grade
+        run: python3 grading/grade.py
 
-          CTEST_VERSION=$(ctest --version | awk '/ctest version/ {print $3}' || echo "0.0.0")
-          echo "ctest version: $CTEST_VERSION"
-
-          vergte() { [  "$1" = "$(printf "%s\n%s" "$1" "$2" | sort -V | tail -n1)" ]; }
-
-          if vergte "$CTEST_VERSION" "3.21.0"; then
-            echo "Using CTest JUnit output"
-            ctest --output-on-failure -C "${{ env.BUILD_TYPE }}" \
-                  --output-junit "$RESULTS_DIR/ctest-junit.xml"
-          else
-            echo "CTest too old; using GoogleTest XML fallback"
-            export GTEST_OUTPUT="xml:${RESULTS_DIR}/gtest.xml"
-            ctest --output-on-failure -C "${{ env.BUILD_TYPE }}"
-          fi
-
-      - name: List test results
-        if: always()
-        run: |
-          echo "Looking for JUnit XML under build/test-results/${{ matrix.task_name }}"
-          find "build/test-results/${{ matrix.task_name }}" -type f -name "*.xml" -maxdepth 3 || true
-          echo "CTEST LastTest.log files (if any):"
-          find build -path "*/Testing/Temporary/LastTest.log" -print || true
-
-      # ✅ Publish a single check on PRs only (avoids duplicate checks on push+PR)
-      - name: Publish Unit Test Results
-        if: always() && github.event_name == 'pull_request'
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: build/test-results/**/*.xml
-          check_name: Unit Tests (${{ matrix.task_name }})
-          report_individual_runs: true
-
-      - name: Upload test log on failure
-        if: failure()
+      # ------------------------------------------------------------
+      # Upload grading result (audit trail)
+      # ------------------------------------------------------------
+      - name: Upload grading result
         uses: actions/upload-artifact@v4
         with:
-          name: ctest-logs-${{ matrix.task_name }}
-          path: |
-            build/Testing/Temporary/LastTest.log
-            build/**/Testing/Temporary/LastTest.log
-          if-no-files-found: ignore
+          name: grading-result
+          path: grading/result.json

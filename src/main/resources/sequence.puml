@@ -1,0 +1,73 @@
+@startuml
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+
+title Runtime Interaction: main → Factory → Strategy (Recursive Sort)
+
+actor Client as main
+
+participant "sort_strategy_factory<int>" as Factory
+participant "sort_strategy<int>" as Strategy
+participant "bubble_sort_strategy<int>" as Bubble
+
+== Strategy Creation ==
+
+main -> Factory : create(sort_type::bubble)
+activate Factory
+
+Factory -> Bubble : new bubble_sort_strategy<int>()
+activate Bubble
+
+Bubble --> Factory : std::unique_ptr<sort_strategy<int>>
+deactivate Bubble
+
+Factory --> main : std::unique_ptr<sort_strategy<int>>
+deactivate Factory
+
+note right of main
+Strategy object is accessed
+via the sort_strategy<int>
+interface.
+end note
+
+== Sorting Execution ==
+
+main -> Strategy : sort(data, size)
+activate Strategy
+
+Strategy -> Bubble : sort(data, size)
+activate Bubble
+
+note right of Bubble
+Public interface delegates
+to recursive helper.
+end note
+
+Bubble -> Bubble : bubble_sort(data, size)
+activate Bubble
+
+Bubble -> Bubble : bubble_sort(data, size - 1)
+activate Bubble
+
+Bubble -> Bubble : bubble_sort(data, size - 2)
+activate Bubble
+
+Bubble --> Bubble : base case reached
+deactivate Bubble
+deactivate Bubble
+deactivate Bubble
+
+deactivate Bubble
+deactivate Strategy
+
+== Result ==
+
+note over main
+Array is now sorted.
+Control returns to main,
+which prints the result.
+end note
+
+@enduml

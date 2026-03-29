@@ -12,11 +12,26 @@
 // unit_tests.cpp
 #include "base_test_fixture.h"
 #include "csc232.h"
+#include "selection_sort_strategy.h"
+#include "sort_strategy.h"
+
 #include "gtest/gtest.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <type_traits>
+
+// Helper to test sorting behavior
+template < typename T >
+void expect_sorted( csc232::sort_strategy< T > &strategy, std::vector< T > input )
+{
+    std::vector< T > expected = input;
+    std::sort( expected.begin( ), expected.end( ) );
+
+    strategy.sort( input.data( ), input.size( ) );
+
+    EXPECT_EQ( input, expected );
+}
 
 // -----------------------------------------------------------------------------
 // Task 1 Fixture and Tests
@@ -34,12 +49,38 @@ protected:
     {
         // Cleanup for Task 1.
     }
+
+    csc232::selection_sort_strategy< int > sorter; // NOLINT
 };
 
-TEST_F( Task1TestFixture, RewriteThisTest )
+TEST_F( Task1TestFixture, ItDoesNothingWithAnEmptyArray )
 {
-    std::cout << "Task 1 is ready for evaluation, but this isn't going to validate anything.\n";
-    SUCCEED( );
+    expect_sorted( sorter, std::vector< int >{ } );
+}
+
+TEST_F( Task1TestFixture, ItCanSortArrayWithOneValue )
+{
+    expect_sorted( sorter, std::vector< int >{ 42 } ); // NOLINT
+}
+
+TEST_F( Task1TestFixture, ItCanSortSortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 1, 2, 3, 4, 5 } ); // NOLINT
+}
+
+TEST_F( Task1TestFixture, ItCanSortReverseSortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 5, 4, 3, 2, 1 } ); // NOLINT
+}
+
+TEST_F( Task1TestFixture, ItCanSortRandomUnsortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 3, 1, 4, 2, 5, 9 } ); // NOLINT
+}
+
+TEST_F( Task1TestFixture, ItCanSortRandomUnsortedWithDuplicatesArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 3, 1, 4, 1, 9, 9, 5, 9 } ); // NOLINT
 }
 
 #else
@@ -59,13 +100,37 @@ class Task2TestFixture : public csc232::CSC232BaseTestFixture
 protected:
     void SetUp( ) override { }
     void TearDown( ) override { }
+    csc232::bubble_sort_strategy< int > sorter; // NOLINT
 };
 
-// --- Replace these with your real Task 2 unit tests ---
-TEST_F( Task2TestFixture, RewriteThisTest )
+TEST_F( Task2TestFixture, ItDoesNothingWithAnEmptyArray )
 {
-    std::cout << "Task 2 is ready for evaluation, but this isn't going to validate anything.\n";
-    SUCCEED( );
+    expect_sorted( sorter, std::vector< int >{ } );
+}
+
+TEST_F( Task2TestFixture, ItCanSortArrayWithOneValue )
+{
+    expect_sorted( sorter, std::vector< int >{ 42 } ); // NOLINT
+}
+
+TEST_F( Task2TestFixture, ItCanSortSortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 1, 2, 3, 4, 5 } ); // NOLINT
+}
+
+TEST_F( Task2TestFixture, ItCanSortReverseSortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 5, 4, 3, 2, 1 } ); // NOLINT
+}
+
+TEST_F( Task2TestFixture, ItCanSortRandomUnsortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 3, 1, 4, 2, 5, 9 } ); // NOLINT
+}
+
+TEST_F( Task2TestFixture, ItCanSortRandomUnsortedWithDuplicatesArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 3, 1, 4, 1, 9, 9, 5, 9 } ); // NOLINT
 }
 #else
 TEST( Task2Primer, ItIsNotReady )
@@ -84,15 +149,39 @@ class Task3TestFixture : public csc232::CSC232BaseTestFixture
 protected:
     void SetUp( ) override { }
     void TearDown( ) override { }
+    csc232::insertion_sort_strategy< int > sorter; // NOLINT
 };
 
-// --- Replace these with your real Task 3 unit tests ---
-
-TEST_F( Task3TestFixture, RewriteThisTest )
+TEST_F( Task3TestFixture, ItDoesNothingWithAnEmptyArray )
 {
-    std::cout << "Task 3 is ready for evaluation, but this isn't going to validate anything.\n";
-    SUCCEED( );
+    expect_sorted( sorter, std::vector< int >{ } );
 }
+
+TEST_F( Task3TestFixture, ItCanSortArrayWithOneValue )
+{
+    expect_sorted( sorter, std::vector< int >{ 42 } ); // NOLINT
+}
+
+TEST_F( Task3TestFixture, ItCanSortSortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 1, 2, 3, 4, 5 } ); // NOLINT
+}
+
+TEST_F( Task3TestFixture, ItCanSortReverseSortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 5, 4, 3, 2, 1 } ); // NOLINT
+}
+
+TEST_F( Task3TestFixture, ItCanSortRandomUnsortedArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 3, 1, 4, 2, 5, 9 } ); // NOLINT
+}
+
+TEST_F( Task3TestFixture, ItCanSortRandomUnsortedWithDuplicatesArray )
+{
+    expect_sorted( sorter, std::vector< int >{ 3, 1, 4, 1, 9, 9, 5, 9 } ); // NOLINT
+}
+
 #else
 TEST( Task3Primer, ItIsNotReady )
 {
@@ -100,58 +189,6 @@ TEST( Task3Primer, ItIsNotReady )
     SUCCEED( );
 }
 #endif // TEST_TASK_3
-
-// -----------------------------------------------------------------------------
-// Task 4 Fixture and Tests
-// -----------------------------------------------------------------------------
-#if TEST_TASK4
-class Task4TestFixture : public csc232::CSC232BaseTestFixture
-{
-protected:
-    void SetUp( ) override { }
-    void TearDown( ) override { }
-};
-
-// --- Replace these with your real Task 3 unit tests ---
-
-TEST_F( Task4TestFixture, RewriteThisTest )
-{
-    std::cout << "Task 4 is ready for evaluation, but this isn't going to validate anything.\n";
-    SUCCEED( );
-}
-#else
-TEST( Task4Primer, ItIsNotReady )
-{
-    std::cerr << "Task 4 is not ready for evaluation; please toggle the TEST_TASK4 macro to TRUE\n";
-    SUCCEED( );
-}
-#endif // TEST_TASK_4
-
-// -----------------------------------------------------------------------------
-// Task 5 Fixture and Tests
-// -----------------------------------------------------------------------------
-#if TEST_TASK5
-class Task5TestFixture : public csc232::CSC232BaseTestFixture
-{
-protected:
-    void SetUp( ) override { }
-    void TearDown( ) override { }
-};
-
-// --- Replace these with your real Task 3 unit tests ---
-
-TEST_F( Task5TestFixture, RewriteThisTest )
-{
-    std::cout << "Task 5 is ready for evaluation, but this isn't going to validate anything.\n";
-    SUCCEED( );
-}
-#else
-TEST( Task5Primer, ItIsNotReady )
-{
-    std::cerr << "Task 5 is not ready for evaluation; please toggle the TEST_TASK5 macro to TRUE\n";
-    SUCCEED( );
-}
-#endif // TEST_TASK_5
 
 // -----------------------------------------------------------------------------
 // Helper: Print task-by-task summary and compute score
@@ -209,9 +246,7 @@ static void PrintPerTaskSummaryAndScore( )
         // Recommend naming fixtures exactly "Task1", "Task2", "Task3"
         if ( suiteSummary.name == "Task1TestFixture" ||
              suiteSummary.name == "Task2TestFixture" ||
-             suiteSummary.name == "Task3TestFixture" ||
-             suiteSummary.name == "Task4TestFixture" ||
-             suiteSummary.name == "Task5TestFixture" )
+             suiteSummary.name == "Task3TestFixture" )
         {
             std::cout << "Task: " << suiteSummary.name << "\n"
                       << "  Passing: " << suiteSummary.passed << "\n"

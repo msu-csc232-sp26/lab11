@@ -9,11 +9,29 @@
  * @copyright Copyright (c) 2026 James R. Daehn
  */
 
+#include "bubble_sort_strategy.h"
+
 #include <cstdlib>
 #include <iostream>
 
+#include "sort_strategy_factory.h"
+using csc232::sort_strategy_factory;
+using csc232::sort_type;
+
 auto main( ) -> int
 {
-    std::cout << "Main target" << std::endl;
+
+    int data[] = { 7, 3, 5, 2, 9, 1 }; // NOLINT
+    const std::size_t size = std::size( data );
+
+    const auto sorter = sort_strategy_factory< int >::create( sort_type::bubble );
+
+    sorter->sort( data, size );
+
+    for ( const int value : data )
+    {
+        std::cout << value << " ";
+    }
+
     return EXIT_SUCCESS;
 }

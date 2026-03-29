@@ -1,6 +1,7 @@
 # Project Specific
 api
 latex
+results
 .cache/
 
 # Visual Studio

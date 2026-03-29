@@ -18,12 +18,6 @@
 
 #define EXECUTE_PREAMBLE TRUE
 
-#define TEST_TASK1 FALSE // TODO:  Task 1 - Step 1: Toggle TEST_TASK1 TO TRUE
-#define TEST_TASK2 FALSE // TODO:  Task 2 - Step 1: Toggle TEST_TASK2 TO TRUE
-#define TEST_TASK3 FALSE // TODO:  Task 3 - Step 1: Toggle TEST_TASK3 TO TRUE
-#define TEST_TASK4 FALSE // TODO:  Task 4 - Step 1: Toggle TEST_TASK4 TO TRUE
-#define TEST_TASK5 FALSE // TODO:  Task 5 - Step 1: Toggle TEST_TASK5 TO TRUE
-
 #include <cassert>
 #include <climits>
 #include <cmath>

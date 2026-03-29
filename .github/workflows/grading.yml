@@ -1,0 +1,125 @@
+name: CI Grading
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: grading-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------
+      # Checkout
+      # ------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # ------------------------------------------------------------
+      # Install build dependencies
+      # ------------------------------------------------------------
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            clang \
+            libgtest-dev
+
+      # ------------------------------------------------------------
+      # Build & test per task preset
+      # ------------------------------------------------------------
+      - name: Build and test per task preset
+        run: |
+          mkdir -p results
+
+          for preset in task1 task1-2 all-tasks; do
+            echo ""
+            echo "===== Grading preset: ${preset} ====="
+
+            cmake --preset ${preset}
+            cmake --build build/${preset}
+
+            ctest --test-dir build/${preset} \
+                  --output-on-failure \
+                  --output-junit "${GITHUB_WORKSPACE}/results/${preset}.xml"
+          done
+
+      # ------------------------------------------------------------
+      # Grade (consumes results/*.json)
+      # ------------------------------------------------------------
+      - name: Grade
+        run: python3 grading/grade.py
+
+      # ------------------------------------------------------------
+      # Comment grading result on PR
+      # ------------------------------------------------------------
+      - name: Comment grading result on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+
+            const result = JSON.parse(
+              fs.readFileSync('grading/result.json', 'utf8')
+            );
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.issue.number;
+
+            const marker = '<!-- AUTOGRADING-COMMENT -->';
+
+            let body = `${marker}
+            CI Autograding Results
+
+            Final Score: ${result.final_score} / ${result.total}
+
+            Breakdown
+            `;
+
+            for (const [k, v] of Object.entries(result.breakdown)) {
+              body += `- ${k}: ${v}\n`;
+            }
+
+            body += `
+            Late penalty: ${result.late_penalty_percent}%
+
+            See the workflow Summary tab for detailed output.
+            `;
+
+            const comments = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const existing = comments.data.find(c =>
+              c.body && c.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body
+              });
+            }
