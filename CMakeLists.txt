@@ -5,9 +5,9 @@ project(lab11 LANGUAGES CXX)
 # ------------------------------------------------------------
 # Assignment task toggles
 # ------------------------------------------------------------
-option(TEST_TASK1 "Enable Task 1 tests" ON)
-option(TEST_TASK2 "Enable Task 2 tests" ON)
-option(TEST_TASK3 "Enable Task 3 tests" ON)
+option(TEST_TASK1 "Enable Task 1 tests" OFF)
+option(TEST_TASK2 "Enable Task 2 tests" OFF)
+option(TEST_TASK3 "Enable Task 3 tests" OFF)
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
     cmake_policy(SET CMP0135 NEW)
@@ -23,7 +23,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ------------------------------------------------------------
 # CI / Instructor Options
 # ------------------------------------------------------------
-option(BUILD_APPS "Build main/demo executables" ON)
+option(BUILD_APPS "Build main/demo executables" OFF)
 option(BUILD_TESTS "Build unit tests" ON)
 option(BUILD_DOCS "Build Doxygen docs" OFF)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
