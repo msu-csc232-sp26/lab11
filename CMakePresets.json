@@ -8,12 +8,13 @@
   "configurePresets": [
     {
       "name": "base",
-      "displayName": "Base Configuration (No Tasks Enabled)",
+      "displayName": "Base Configuration (No Test Tasks Enabled)",
       "description": "Build configuration with all TEST_TASK macros disabled",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_CXX_STANDARD": "20",
+        "BUILD_APPS": "ON",
         "TEST_TASK1": "OFF",
         "TEST_TASK2": "OFF",
         "TEST_TASK3": "OFF"
