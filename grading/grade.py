@@ -44,11 +44,14 @@ def score_fraction(fraction: float) -> float:
     return 0.0
 
 
+ALGO_FIXTURES = {
+    "Task1TestFixture",
+    "Task2TestFixture",
+    "Task3TestFixture",
+}
+
+
 def parse_junit_counts(xml_path: Path) -> tuple[int, int]:
-    """
-    Count passed and total tests from a JUnit XML file.
-    Returns: (passed, total)
-    """
     tree = ElementTree.parse(xml_path)
     root = tree.getroot()
 
@@ -56,6 +59,14 @@ def parse_junit_counts(xml_path: Path) -> tuple[int, int]:
     failed = 0
 
     for case in root.iter("testcase"):
+        name = case.attrib.get("name", "")
+        # Expect "Fixture.Test" format
+        if "." not in name:
+            continue
+        fixture, _ = name.split(".", 1)
+        if fixture not in ALGO_FIXTURES:
+            continue
+
         total += 1
         if case.find("failure") is not None or case.find("error") is not None:
             failed += 1
