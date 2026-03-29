@@ -51,7 +51,7 @@ jobs:
 
             ctest --test-dir build/${preset} \
                   --output-on-failure \
-                  --output-junit "${GITHUB_WORKSPACE}/results/${preset}.xml"
+                  --output-junit "${GITHUB_WORKSPACE}/results/${preset}.xml" || true
           done
 
       # ------------------------------------------------------------

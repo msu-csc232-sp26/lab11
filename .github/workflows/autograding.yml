@@ -67,7 +67,7 @@ jobs:
           mkdir -p results
           ctest --test-dir build/all-tasks \
                 --output-on-failure \
-                --test-output-json "${GITHUB_WORKSPACE}results/all-tasks.xml"
+                --test-output-json "${GITHUB_WORKSPACE}results/all-tasks.xml" || true
 
       # ------------------------------------------------------------
       # Grade (JSON-driven)
