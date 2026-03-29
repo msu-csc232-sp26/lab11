@@ -37,8 +37,16 @@
       }
     },
     {
-      "name": "all-tasks",
+      "name": "task1-3",
       "inherits": "task1-2",
+      "displayName": "Tasks 1-3 Enabled",
+      "cacheVariables": {
+        "TEST_TASK3": "ON"
+      }
+    },
+    {
+      "name": "all-tasks",
+      "inherits": "task1-3",
       "displayName": "All Tasks Enabled (Instructor / Grading)",
       "cacheVariables": {
         "TEST_TASK3": "ON"
