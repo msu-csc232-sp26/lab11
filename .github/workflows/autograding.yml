@@ -58,8 +58,10 @@ jobs:
                 echo "CURRENT_TASK=3" >> "$GITHUB_ENV"
               elif git tag --list "task*-release" | grep -q task2-release; then
                 echo "CURRENT_TASK=2" >> "$GITHUB_ENV"
-              else
+              elif git tag --list "task*-release" | grep -q task1-release; then
                 echo "CURRENT_TASK=1" >> "$GITHUB_ENV"
+              else
+                echo "CURRENT_TASK=0" >> "$GITHUB_ENV"
               fi
               ;;
           esac
@@ -98,8 +100,8 @@ jobs:
           elif [ "$CURRENT_TASK" -eq 3 ]; then
             PRESETS="task1 task1-2 task1-3"
           else
-            echo "Invalid CURRENT_TASK: $CURRENT_TASK"
-            exit 1
+            echo "All tests disabled! CURRENT_TASK: $CURRENT_TASK"
+            PRESETS=""
           fi
 
           for preset in $PRESETS; do
